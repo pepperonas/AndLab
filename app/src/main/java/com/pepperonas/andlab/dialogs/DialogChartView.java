@@ -21,6 +21,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -60,6 +61,7 @@ public class DialogChartView {
     private LineGraphSeries<DataPoint> mSeriesSimulation;
 
     private boolean mFocusRealTimeSeries = true;
+    private boolean mShowOverlay = true;
 
     public DialogChartView(Context context) {
         new Builder(context)
@@ -74,6 +76,13 @@ public class DialogChartView {
                     // full screen
                     dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
                         LayoutParams.MATCH_PARENT);
+
+                    View overlayLeft = dialog.findViewById(R.id.overlay_left);
+                    View overlayRight = dialog.findViewById(R.id.overlay_right);
+                    if (!mShowOverlay) {
+                        overlayLeft.setVisibility(View.INVISIBLE);
+                        overlayRight.setVisibility(View.INVISIBLE);
+                    }
 
                     mGraph = (GraphView) dialog.findViewById(R.id.graph);
                     initGraph();

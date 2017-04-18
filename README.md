@@ -16,6 +16,7 @@ An Android playground.
 ![SC002](screenshots/sc002.png?raw=true "Dialog Large Button")
 ##### Dialog Chart Simulation
 ![SC003](screenshots/sc003.png?raw=true "Fullscreen Dialog Simulation")
+![SC004](screenshots/sc004.png?raw=true "Fullscreen Dialog Simulation")
 ```
 sim(t( 0)) =   1.00 | rt(t( 0)) =  63.47  ->  62.47 too fast
 sim(t( 1)) =   5.00 | rt(t( 1)) =  95.55  ->  90.55 too fast
