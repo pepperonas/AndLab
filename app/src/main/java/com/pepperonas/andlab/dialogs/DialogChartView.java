@@ -31,22 +31,35 @@ import com.pepperonas.materialdialog.MaterialDialog.Builder;
 import com.pepperonas.materialdialog.MaterialDialog.DismissListener;
 import com.pepperonas.materialdialog.MaterialDialog.ShowListener;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author Martin Pfeffer
  * @see <a href="https://celox.io">https://celox.io</a>
+ *
+ * This dialog shows static data-plots (target data), which are given by the test scenario. A
+ * measurement is related to these plots and gets visualisied in real-time on a second graph. After
+ * the test ends all measurements are compared to the target data.
+ *
+ * NOTE: In this showcase the slope may reach a value too high to be interpreted correctly by {@link
+ * DialogChartView#TOLERANCE}. This issue is caused by the randomized plot-generation and should not
+ * occur in real world usage.
  */
 public class DialogChartView {
 
     private static final String TAG = "DialogChartView";
+
     private static final double TOLERANCE = 2d;
+
+    private GraphView mGraph;
+    private double mGraphLastXValue = -1d;
 
     private final Handler mHandler = new Handler();
     private Runnable mTimer;
-    private double graphLastXValue = -1d;
+
     private LineGraphSeries<DataPoint> mSeriesRealTime;
     private LineGraphSeries<DataPoint> mSeriesSimulation;
+
+    private boolean mFocusRealTimeSeries = true;
 
     public DialogChartView(Context context) {
         new Builder(context)
@@ -62,26 +75,30 @@ public class DialogChartView {
                     dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT,
                         LayoutParams.MATCH_PARENT);
 
-                    final GraphView graph = (GraphView) dialog.findViewById(R.id.graph);
-                    initGraph(graph);
+                    mGraph = (GraphView) dialog.findViewById(R.id.graph);
+                    initGraph();
+                    setSimulationPoints();
 
-                    loadSimulationPoints();
-
-                    graph.addSeries(mSeriesSimulation);
+                    mSeriesRealTime = new LineGraphSeries<>();
+                    mGraph.addSeries(mSeriesRealTime);
 
                     mTimer = new Runnable() {
                         @Override
                         public void run() {
-                            graphLastXValue += 1d;
+                            mGraphLastXValue += 1d;
                             mSeriesRealTime.appendData(
-                                new DataPoint(graphLastXValue, getRandom()), false, 40);
-                            mHandler.postDelayed(this, 50);
+                                new DataPoint(mGraphLastXValue, getRandom()), false, 40);
+                            mHandler.postDelayed(this, 250);
 
-                            if (graphLastXValue == 39) {
+                            if (mFocusRealTimeSeries) {
+                                focusRealTimeSeries();
+                            }
+
+                            if (mGraphLastXValue == 39) {
                                 // end of test: stop and compute deviation for x-values
                                 mHandler.removeCallbacks(mTimer);
 
-                                checkDeviation(graph);
+                                checkDeviation();
                             }
 
                         }
@@ -100,17 +117,36 @@ public class DialogChartView {
             .show();
     }
 
-    private void checkDeviation(GraphView graph) {
+    private void focusRealTimeSeries() {
+        if (mGraphLastXValue > 10) {
+            mGraph.getViewport().setMinX(mGraphLastXValue - 10);
+            mGraph.getViewport().setMaxX(mGraphLastXValue + 10);
+        }
+    }
+
+    private void initGraph() {
+        mGraph.getViewport().setXAxisBoundsManual(true);
+        mGraph.getViewport().setMinX(0);
+        mGraph.getViewport().setMaxX(20);
+
+        mGraph.getViewport().setYAxisBoundsManual(true);
+        mGraph.getViewport().setMinY(-10);
+        mGraph.getViewport().setMaxY(100);
+
+        mGraph.getViewport().setScrollable(true);
+    }
+
+    private void checkDeviation() {
         List<DataPoint> valuesSimulation = mSeriesSimulation.getDataPoints();
         List<DataPoint> valuesRealTime = mSeriesRealTime.getDataPoints();
 
-        Log.d(TAG, "checkDeviation valuesSimulation.size()=" + valuesSimulation.size());
-        Log.d(TAG, "checkDeviation valuesRealTime.size()=" + valuesRealTime.size());
         if (valuesSimulation.size() != valuesRealTime.size()) {
-            Log.w(TAG, "checkDeviation: WARNING - Record corrupted?");
-        } else {
+            int sims = valuesSimulation.size();
+            int rts = valuesRealTime.size();
+            Log.w(TAG, "WARNING - Record corrupted? (sim=" + sims + " | rts=" + rts + ")");
 
-            PointsGraphSeries<DataPoint> seriesNice = new PointsGraphSeries<DataPoint>();
+        } else {
+            PointsGraphSeries<DataPoint> seriesNice = new PointsGraphSeries<>();
             seriesNice.setColor(Color.GREEN);
             seriesNice.setSize(30);
 
@@ -125,12 +161,12 @@ public class DialogChartView {
                     seriesNice.appendData(new DataPoint(i, yRt), false, 40);
                 }
 
-                String msg = "sim(" + frmt(2, i) + ") = " + frmt(ySim) + " | "
-                    + "rt(" + frmt(2, i) + ") = " + frmt(yRt) + " "
+                String msg = "sim(t(" + frmt(2, i) + ")) = " + frmt(ySim) + " | "
+                    + "rt(t(" + frmt(2, i) + ")) = " + frmt(yRt) + " "
                     + " -> " + frmt(diff) + " " + info;
                 Log.i(TAG, msg);
             }
-            graph.addSeries(seriesNice);
+            mGraph.addSeries(seriesNice);
 
         }
     }
@@ -143,21 +179,8 @@ public class DialogChartView {
         return String.format("%6.2f", value);
     }
 
-    public void initGraph(GraphView graph) {
-        graph.getViewport().setXAxisBoundsManual(true);
-        graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(40);
-
-        graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(-10);
-        graph.getViewport().setMaxY(100);
-
-        mSeriesRealTime = new LineGraphSeries<>();
-        graph.addSeries(mSeriesRealTime);
-    }
-
-    private void loadSimulationPoints() {
-        mSeriesSimulation = new LineGraphSeries<DataPoint>(
+    private void setSimulationPoints() {
+        mSeriesSimulation = new LineGraphSeries<>(
             new DataPoint[]{
                 new DataPoint(0, 1),
                 new DataPoint(1, 5),
@@ -200,26 +223,15 @@ public class DialogChartView {
                 new DataPoint(38, 85),
                 new DataPoint(39, 90)
             });
+
+        mGraph.addSeries(mSeriesSimulation);
     }
 
-    double mLastRandom = 2;
-    Random mRand = new Random();
+    private double mLastRandom = 2;
 
     private double getRandom() {
         mLastRandom++;
         return Math.abs(Math.sin(mLastRandom * 0.5) * 10 * (Math.random() * 10 + 1));
-    }
-
-
-    private class Point {
-
-        double x;
-        double y;
-
-        public Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
     }
 
 }

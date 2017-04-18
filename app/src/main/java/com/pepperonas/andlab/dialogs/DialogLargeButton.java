@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pepperonas.andlab;
+package com.pepperonas.andlab.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -25,8 +25,10 @@ import com.pepperonas.materialdialog.MaterialDialog.ShowListener;
 /**
  * @author Martin Pfeffer
  * @see <a href="https://celox.io">https://celox.io</a>
+ *
+ * To provide an easy to use GUI this dialog is raised with an extra large button.
  */
-class DialogLargeButton {
+public class DialogLargeButton {
 
     public DialogLargeButton(Context context) {
         new MaterialDialog.Builder(context)

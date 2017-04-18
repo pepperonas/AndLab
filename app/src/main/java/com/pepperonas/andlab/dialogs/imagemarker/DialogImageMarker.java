@@ -27,6 +27,10 @@ import com.pepperonas.materialdialog.MaterialDialog.ShowListener;
 /**
  * @author Martin Pfeffer
  * @see <a href="https://celox.io">https://celox.io</a>
+ *
+ * This dialog shows an image on which the user is able to set a marker at a specific point. For
+ * best device compatibility the position should be stored and shared by a relative value (e.g.
+ * percentage).
  */
 public class DialogImageMarker {
 
@@ -50,8 +54,8 @@ public class DialogImageMarker {
                     int x = miv.getPosX();
                     int y = miv.getPosY();
                     Toast.makeText(context,
-                        "X: " + fmt(x,4) + " [" + fmt(miv.getRelativeX(),3) + "%]" + "\n"
-                            + "Y: " + fmt(y,4) + " [" + fmt(miv.getRelativeY(),3) + "%]",
+                        "X: " + fmt(x, 4) + " [" + fmt(miv.getRelativeX(), 3) + "%]" + "\n"
+                            + "Y: " + fmt(y, 4) + " [" + fmt(miv.getRelativeY(), 3) + "%]",
                         Toast.LENGTH_LONG).show();
                 }
             })

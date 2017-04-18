@@ -54,8 +54,6 @@ public class MarkerImageView extends android.support.v7.widget.AppCompatImageVie
     private int mColor = Color.RED;
     private float mStrokeWidth = 8;
     private Style mPaintStyle = Style.STROKE;
-    private int mNewBitmapWidth;
-    private int mNewBitmapHeight;
 
     public void setRadius(int radius) {
         mRadius = radius;
@@ -100,8 +98,8 @@ public class MarkerImageView extends android.support.v7.widget.AppCompatImageVie
     /**
      * All available circles
      */
-    private HashSet<CircleArea> mCircles = new HashSet<CircleArea>(mCircleLimit);
-    private SparseArray<CircleArea> mCirclePointer = new SparseArray<CircleArea>(mCircleLimit);
+    private HashSet<CircleArea> mCircles = new HashSet<>(mCircleLimit);
+    private SparseArray<CircleArea> mCirclePointer = new SparseArray<>(mCircleLimit);
 
 
     /**
@@ -174,12 +172,12 @@ public class MarkerImageView extends android.support.v7.widget.AppCompatImageVie
             scaleY = (float) mBitmap.getHeight() / (float) getHeight();
         }
         float scale = scaleX > scaleY ? scaleX : scaleY;
-        mNewBitmapWidth = (int) (mBitmap.getWidth() / scale);
-        mNewBitmapHeight = (int) (mBitmap.getHeight() / scale);
-        int centerX = (getWidth() - mNewBitmapWidth) / 2;
-        int centerY = (getHeight() - mNewBitmapHeight) / 2;
-        mBitmap = Bitmap.createScaledBitmap(mBitmap, mNewBitmapWidth,
-            mNewBitmapHeight, false);
+        int newBitmapWidth = (int) (mBitmap.getWidth() / scale);
+        int newBitmapHeight = (int) (mBitmap.getHeight() / scale);
+        int centerX = (getWidth() - newBitmapWidth) / 2;
+        int centerY = (getHeight() - newBitmapHeight) / 2;
+        mBitmap = Bitmap.createScaledBitmap(mBitmap, newBitmapWidth,
+            newBitmapHeight, false);
 
         canvas.drawBitmap(mBitmap, centerX, centerY, null);
 

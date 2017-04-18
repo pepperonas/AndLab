@@ -20,8 +20,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import com.pepperonas.andlab.dialogs.DialogChartView;
+import com.pepperonas.andlab.dialogs.DialogLargeButton;
 import com.pepperonas.andlab.dialogs.imagemarker.DialogImageMarker;
 
+/**
+ * @author Martin Pfeffer
+ * @see <a href="https://celox.io">https://celox.io</a>
+ *
+ * This Activity provides buttons to run the various dialogs / showcases.
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override

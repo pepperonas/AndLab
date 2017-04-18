@@ -15,5 +15,3 @@
  */
 
 include ':app'
-//include ':module1'
-//project(':module1').projectDir = new File(settingsDir, '../GraphView B/Module 1')
