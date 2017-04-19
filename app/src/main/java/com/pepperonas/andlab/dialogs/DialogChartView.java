@@ -19,15 +19,18 @@ package com.pepperonas.andlab.dialogs;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.WindowManager.LayoutParams;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 import com.pepperonas.andlab.R;
+import com.pepperonas.materialdialog.MaterialDialog;
 import com.pepperonas.materialdialog.MaterialDialog.Builder;
 import com.pepperonas.materialdialog.MaterialDialog.DismissListener;
 import com.pepperonas.materialdialog.MaterialDialog.ShowListener;
@@ -50,6 +53,8 @@ public class DialogChartView {
     private static final String TAG = "DialogChartView";
 
     private static final double TOLERANCE = 2d;
+    //    private static final long TIME_BETWEEN_UPDATES = 50;
+    private static final long TIME_BETWEEN_UPDATES = 250;
 
     private GraphView mGraph;
     private double mGraphLastXValue = -1d;
@@ -62,8 +67,9 @@ public class DialogChartView {
 
     private boolean mFocusRealTimeSeries = true;
     private boolean mShowOverlay = true;
+    private String mMsg;
 
-    public DialogChartView(Context context) {
+    public DialogChartView(final Context context) {
         new Builder(context)
             .title("Drive Sim")
             .positiveText("ok")
@@ -97,7 +103,7 @@ public class DialogChartView {
                             mGraphLastXValue += 1d;
                             mSeriesRealTime.appendData(
                                 new DataPoint(mGraphLastXValue, getRandom()), false, 40);
-                            mHandler.postDelayed(this, 250);
+                            mHandler.postDelayed(this, TIME_BETWEEN_UPDATES);
 
                             if (mFocusRealTimeSeries) {
                                 focusRealTimeSeries();
@@ -107,7 +113,7 @@ public class DialogChartView {
                                 // end of test: stop and compute deviation for x-values
                                 mHandler.removeCallbacks(mTimer);
 
-                                checkDeviation();
+                                checkDeviation(context);
                             }
 
                         }
@@ -145,9 +151,10 @@ public class DialogChartView {
         mGraph.getViewport().setScrollable(true);
     }
 
-    private void checkDeviation() {
+    private void checkDeviation(final Context context) {
         List<DataPoint> valuesSimulation = mSeriesSimulation.getDataPoints();
         List<DataPoint> valuesRealTime = mSeriesRealTime.getDataPoints();
+        mMsg = "";
 
         if (valuesSimulation.size() != valuesRealTime.size()) {
             int sims = valuesSimulation.size();
@@ -170,12 +177,24 @@ public class DialogChartView {
                     seriesNice.appendData(new DataPoint(i, yRt), false, 40);
                 }
 
-                String msg = "sim(t(" + frmt(2, i) + ")) = " + frmt(ySim) + " | "
-                    + "rt(t(" + frmt(2, i) + ")) = " + frmt(yRt) + " "
-                    + " -> " + frmt(diff) + " " + info;
-                Log.i(TAG, msg);
+                String log = "sim(t(" + frmt(2, i) + "))=" + frmt(ySim) + "|"
+                    + "rt(t(" + frmt(2, i) + "))=" + frmt(yRt) + " "
+                    + "->" + frmt(diff) + " " + info;
+                Log.i(TAG, log);
+                mMsg += (log + "\n");
             }
             mGraph.addSeries(seriesNice);
+            mGraph.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new MaterialDialog.Builder(context)
+                        .title("Result")
+                        .message(mMsg)
+                        .font(Typeface.MONOSPACE)
+                        .positiveText("OK")
+                        .show();
+                }
+            });
 
         }
     }
@@ -185,7 +204,7 @@ public class DialogChartView {
     }
 
     private String frmt(double value) {
-        return String.format("%6.2f", value);
+        return String.format("%5.2f", value);
     }
 
     private void setSimulationPoints() {
